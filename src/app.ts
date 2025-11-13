@@ -9,7 +9,7 @@ import cors from "cors";
 import helmet from "helmet";
 
 import postsRoutes from "./api/v1/routes/posts.routes"
-
+import { setupSwagger } from "./config/swagger";
 
 /**
  * @constant {Application} app - Main Express application instance.
@@ -22,7 +22,7 @@ app.use(cors());
 app.use(helmet()); 
 
 app.use("/api/posts", postsRoutes);
-
+setupSwagger(app);
 
 
 /**
