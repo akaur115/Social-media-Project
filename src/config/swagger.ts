@@ -5,10 +5,10 @@
 
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
-import { Express } from "express";
+import { Application } from "express";
 
 /**
- * Swagger definition object for Connectify API.
+ * Swagger definition for the Connectify API.
  */
 const swaggerOptions = {
   definition: {
@@ -17,28 +17,24 @@ const swaggerOptions = {
       title: "Connectify API Documentation",
       version: "1.0.0",
       description:
-        "API documentation for the Connectify Social Media Platform. Includes basic CRUD operations for posts and system overview.",
-      contact: {
-        name: "Arshpreet",
-        email: "arshpreetb417@gmail.com",
-      },
+        "API documentation for Connectify Social Media Platform, including post CRUD operations.",
     },
     servers: [
       {
         url: "http://localhost:4000",
-        description: "Development server",
+        description: "Development Server",
       },
     ],
   },
-  apis: ["./src/api/v1/routes/*.ts"],
+  apis: ["./src/api/v1/routes/*.ts"], // path to your route files
 };
 
-export const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 /**
- * Registers the Swagger UI route.
- * @param app Express application instance
+ * Sets up Swagger UI route at /api-docs
+ * @param app Express app instance
  */
-export const setupSwagger = (app: Express): void => {
+export function setupSwagger(app: Application): void {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-};
+}
