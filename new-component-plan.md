@@ -20,6 +20,6 @@ It lets the server process multipart/form-data requests, which are used when upl
 - Works easily with TypeScript and Express routes.
 
 ## 3. Implementation Plan ###
-Step 1 – Install Packages bash
+Step 1 - Install Packages bash
 npm install multer
 npm install --save-dev @types/multer
