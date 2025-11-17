@@ -17,7 +17,7 @@ const swaggerOptions = {
       title: "Connectify API Documentation",
       version: "1.0.0",
       description:
-        "API documentation for Connectify Social Media Platform, including post CRUD operations.",
+        "API documentation for the Connectify Social Media Platform, including CRUD operations and image upload support.",
     },
     servers: [
       {
@@ -25,8 +25,93 @@ const swaggerOptions = {
         description: "Development Server",
       },
     ],
+
+    /**
+     * Add paths manually to support file uploads for POST /api/posts
+     */
+    paths: {
+      "/api/posts": {
+        post: {
+          tags: ["Posts"],
+          summary: "Create a post (with optional image upload)",
+          requestBody: {
+            required: false,
+            content: {
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    image: {
+                      type: "string",
+                      format: "binary",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: "Post created successfully",
+            },
+            400: {
+              description: "Invalid data or image upload failed",
+            },
+          },
+        },
+
+        get: {
+          tags: ["Posts"],
+          summary: "Get all posts",
+          responses: {
+            200: {
+              description: "List of posts",
+            },
+          },
+        },
+      },
+
+      "/api/posts/{id}": {
+        put: {
+          tags: ["Posts"],
+          summary: "Update a post by ID",
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Post ID",
+            },
+          ],
+          responses: {
+            200: { description: "Post updated successfully" },
+            404: { description: "Post not found" },
+          },
+        },
+
+        delete: {
+          tags: ["Posts"],
+          summary: "Delete a post by ID",
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Post ID",
+            },
+          ],
+          responses: {
+            200: { description: "Post deleted successfully" },
+            404: { description: "Post not found" },
+          },
+        },
+      },
+    },
   },
-  apis: ["./src/api/v1/routes/*.ts"], // path to your route files
+
+  apis: ["./src/api/v1/routes/*.ts"], // scan for JSDoc annotations in routes
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
