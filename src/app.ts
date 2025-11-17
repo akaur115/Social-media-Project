@@ -31,7 +31,8 @@ setupSwagger(app);
  * @returns {string} A welcome message
  */
 app.get("/", (req: Request, res: Response): void => {
-  res.status(200).send("Welcome to Connectify API!");
+  res.status(200).json({ message: "Welcome to Connectify API!" });
+
 });
 
 export default app;
