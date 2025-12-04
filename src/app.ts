@@ -9,6 +9,8 @@ import helmet from "helmet";
 
 import postsRoutes from "./api/v1/routes/posts.routes";
 import { setupSwagger } from "./config/swagger";
+import userRoutes from "./api/v1/routes/user.routes";
+import authRoutes from "./api/v1/routes/auth.routes";
 
 const app: Application = express();
 
@@ -19,6 +21,8 @@ app.use(helmet());
 
 // Routes
 app.use("/api/posts", postsRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 // Swagger
 setupSwagger(app);
