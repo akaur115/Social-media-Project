@@ -1,27 +1,55 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { getUserByEmail } from "../repositories/user.repository";
-import { LoginInput } from "../models/auth.model";
+import { createUser, getUserByEmail } from "../repositories/user.repository";
 
-const JWT_SECRET = "supersecret123"; 
+interface RegisterInput {
+  username: string;
+  email: string;
+  password: string;
+}
 
-export const authService = {
-  /**
-   * Validates user credentials and returns JWT token.
-   */
-  async login(data: LoginInput): Promise<string | null> {
-    const user = await getUserByEmail(data.email);
-    if (!user) return null;
+interface LoginInput {
+  email: string;
+  password: string;
+}
 
-    const validPassword = await bcrypt.compare(data.password, user.password);
-    if (!validPassword) return null;
+/**
+ * Registers a new user.
+ */
+export async function register(data: RegisterInput) {
+  const hashedPassword = await bcrypt.hash(data.password, 10);
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+  const newUser = await createUser({
+      username: data.username,
+      email: data.email,
+      password: hashedPassword,
+      role: "user",
+      createdAt: 0
+  });
 
-    return token;
-  },
-};
+  return newUser;
+}
+
+/**
+ * Logs in a user and returns a JWT token.
+ */
+export async function login(data: LoginInput): Promise<string | null> {
+  const user = await getUserByEmail(data.email);
+
+  if (!user) return null;
+
+  const passwordMatch = await bcrypt.compare(data.password, user.password);
+
+  if (!passwordMatch) return null;
+
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET || "secret",
+    { expiresIn: "1h" }
+  );
+
+  return token;
+}
+
+export const authService = { register, login };
+export default authService;

@@ -1,13 +1,13 @@
 import admin from "firebase-admin";
+import path from "path";
 
-const serviceAccount = require("../../serviceAccountKey.json");
+const serviceAccountPath = path.resolve("firebase-key.json");
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: "social-media-api.appspot.com", 
+    credential: admin.credential.cert(serviceAccountPath),
   });
 }
 
 export const db = admin.firestore();
-export const bucket = admin.storage().bucket();
+export const auth = admin.auth();
