@@ -1,18 +1,16 @@
 /**
- *Firebase admin setup for Firestore and Auth.
+ * @file firebase.ts
+ * @description Firebase Admin SDK initialization for Firestore usage.
  */
 
 import admin from "firebase-admin";
-import dotenv from "dotenv";
+import path from "path";
 
-dotenv.config();
+// Load Firebase service account key
+const serviceAccountPath = path.resolve("serviceAccountKey.json");
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  });
-}
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccountPath),
+});
 
 export const db = admin.firestore();
-export const auth = admin.auth();
