@@ -1,42 +1,46 @@
 /**
  * @file posts.routes.ts
- * @description Routes for Post CRUD operations + image upload + authentication middleware.
+ * @description Routes for post CRUD + upload
  */
 
-import { Router } from "express";
+import { Router, Request, Response } from "express";
+import { upload } from "../middleware/upload.middleware";
+import { authRequired } from "../middleware/auth.middleware";
 import {
   createPost,
   getAllPosts,
   updatePost,
-  deletePost,
+  deletePost
 } from "../controllers/posts.controller";
-import { upload } from "../middleware/upload.middleware";
-import { authRequired } from "../middleware/auth.middleware";
 
-const router: Router = Router();
+const router = Router();
 
 /**
- * @route POST /api/posts
- * @description Create a post (with optional image)
+ * CREATE POST
  */
-router.post("/", authRequired, upload.single("image"), createPost);
+router.post("/", authRequired, upload.single("image"), (req: Request, res: Response) => {
+  createPost(req, res);
+});
 
 /**
- * @route GET /api/posts
- * @description Retrieve all posts
+ * GET ALL POSTS
  */
-router.get("/", authRequired, getAllPosts);
+router.get("/", authRequired, (req: Request, res: Response) => {
+  getAllPosts(req, res);
+});
 
 /**
- * @route PUT /api/posts/:id
- * @description Update a specific post
+ * UPDATE POST
  */
-router.put("/:id", authRequired, updatePost);
+router.put("/:id", authRequired, upload.single("image"), (req: Request, res: Response) => {
+  updatePost(req, res);
+});
 
 /**
- * @route DELETE /api/posts/:id
- * @description Delete a specific post
+ * DELETE POST
  */
-router.delete("/:id", authRequired, deletePost);
+router.delete("/:id", authRequired, (req: Request, res: Response) => {
+  deletePost(req, res);
+});
 
 export default router;
