@@ -1,9 +1,9 @@
 /**
  * @file posts.routes.ts
- * @description Routes for CRUD operations on posts, including image upload using Multer.
+ * @description Routes for Post CRUD operations + image upload + authentication middleware.
  */
 
-import express, { Router } from "express";
+import { Router } from "express";
 import {
   createPost,
   getAllPosts,
@@ -13,36 +13,30 @@ import {
 import { upload } from "../middleware/upload.middleware";
 import { authRequired } from "../middleware/auth.middleware";
 
-/** Express Router for post routes */
-const router: Router = express.Router();
+const router: Router = Router();
 
-router.post("/", authRequired, createPost);
 /**
  * @route POST /api/posts
- * @description Create a new post with an optional image upload
- * @access Public
+ * @description Create a post (with optional image)
  */
-router.post("/", upload.single("image"), createPost);
+router.post("/", authRequired, upload.single("image"), createPost);
 
 /**
  * @route GET /api/posts
- * @description Get all posts
- * @access Public
+ * @description Retrieve all posts
  */
-router.get("/", getAllPosts);
+router.get("/", authRequired, getAllPosts);
 
 /**
  * @route PUT /api/posts/:id
- * @description Update a post by ID
- * @access Public
+ * @description Update a specific post
  */
-router.put("/:id", updatePost);
+router.put("/:id", authRequired, updatePost);
 
 /**
  * @route DELETE /api/posts/:id
- * @description Delete a post by ID
- * @access Public
+ * @description Delete a specific post
  */
-router.delete("/:id", deletePost);
+router.delete("/:id", authRequired, deletePost);
 
 export default router;
