@@ -1,18 +1,13 @@
-/**
- *Firebase admin setup for Firestore and Auth.
- */
-
 import admin from "firebase-admin";
-import dotenv from "dotenv";
 
-dotenv.config();
+const serviceAccount = require("../../serviceAccountKey.json");
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.applicationDefault(),
-    projectId: process.env.FIREBASE_PROJECT_ID,
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "social-media-api.appspot.com", 
   });
 }
 
 export const db = admin.firestore();
-export const auth = admin.auth();
+export const bucket = admin.storage().bucket();

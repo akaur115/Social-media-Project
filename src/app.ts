@@ -9,7 +9,7 @@ import helmet from "helmet";
 
 import postsRoutes from "./api/v1/routes/posts.routes";
 import { setupSwagger } from "./config/swagger";
-
+import userRoutes from "./api/v1/routes/user.routes";
 const app: Application = express();
 
 // Middleware
@@ -19,6 +19,7 @@ app.use(helmet());
 
 // Routes
 app.use("/api/posts", postsRoutes);
+app.use("/api/users", userRoutes);
 
 // Swagger
 setupSwagger(app);
