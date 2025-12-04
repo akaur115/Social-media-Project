@@ -1,29 +1,103 @@
 /**
  * @file posts.routes.ts
- * @description Defines the routes for CRUD operations on posts.
+ * @description Routes for all Post CRUD operations + image upload support.
  */
 
-import express, { Router } from "express";
-import {
-  createPost,
-  getAllPosts,
-  updatePost,
-  deletePost,
-} from "../controllers/posts.controller";
+import { Router } from "express";
+import { postsController } from "../controllers/posts.controller";
+import { upload } from "../middleware/upload.middleware";
 
-/** Express Router for post routes */
-const router: Router = express.Router();
+const router = Router();
 
-/** @route POST /api/posts - Create a new post */
-router.post("/", createPost);
+/**
+ * @swagger
+ * tags:
+ *   name: Posts
+ *   description: CRUD operations for social media posts
+ */
 
-/** @route GET /api/posts - Get all posts */
-router.get("/", getAllPosts);
+/**
+ * @swagger
+ * /api/posts:
+ *   get:
+ *     summary: Get all posts
+ *     tags: [Posts]
+ *     responses:
+ *       200:
+ *         description: List of all posts.
+ */
+router.get("/", (req, res) => postsController.getAllPosts(req, res));
 
-/** @route PUT /api/posts/:id - Update post by ID */
-router.put("/:id", updatePost);
+/**
+ * @swagger
+ * /api/posts:
+ *   post:
+ *     summary: Create a new post (supports image upload)
+ *     tags: [Posts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               content:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Post created successfully.
+ */
+router.post("/", upload.single("image"), (req, res) =>
+  postsController.createPost(req, res)
+);
 
-/** @route DELETE /api/posts/:id - Delete post by ID */
-router.delete("/:id", deletePost);
+/**
+ * @swagger
+ * /api/posts/{id}:
+ *   put:
+ *     summary: Update a post by ID
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Post updated successfully.
+ */
+router.put("/:id", (req, res) => postsController.updatePost(req, res));
+
+/**
+ * @swagger
+ * /api/posts/{id}:
+ *   delete:
+ *     summary: Delete a post by ID
+ *     tags: [Posts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The post ID
+ *     responses:
+ *       204:
+ *         description: Post deleted successfully.
+ */
+router.delete("/:id", (req, res) => postsController.deletePost(req, res));
 
 export default router;

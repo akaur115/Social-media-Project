@@ -1,40 +1,29 @@
-/**
- * @file swagger.ts
- * @description Configures Swagger (OpenAPI) documentation for the Connectify API.
- */
-
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Application } from "express";
 
-/**
- * Swagger definition for the Connectify API.
- */
-const swaggerOptions = {
+const options: swaggerJsdoc.Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Connectify API Documentation",
+      title: "Connectify Social Media API",
       version: "1.0.0",
       description:
-        "API documentation for Connectify Social Media Platform, including post CRUD operations.",
+        "Backend API for Connectify. Includes posts, users, comments and file uploads.",
     },
     servers: [
       {
         url: "http://localhost:4000",
-        description: "Development Server",
+        description: "Local dev server",
       },
     ],
   },
-  apis: ["./src/api/v1/routes/*.ts"], // path to your route files
+  // all route files:
+  apis: ["./src/api/v1/routes/*.ts"],
 };
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const swaggerSpec = swaggerJsdoc(options);
 
-/**
- * Sets up Swagger UI route at /api-docs
- * @param app Express app instance
- */
 export function setupSwagger(app: Application): void {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
