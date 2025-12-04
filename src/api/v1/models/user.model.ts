@@ -6,6 +6,7 @@ export interface User {
   id?: string;
   username: string;
   email: string;
+  password: string;
   role: "user" | "admin";
   photoUrl?: string;
   createdAt: number;

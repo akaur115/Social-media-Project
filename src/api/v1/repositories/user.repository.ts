@@ -1,7 +1,17 @@
 import { db } from "../../../config/firebase";
 import { User } from "../models/user.model";
 
+
 const usersRef = db.collection("users");
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const snapshot = await usersRef.where("email", "==", email).limit(1).get();
+  if (snapshot.empty) return null;
+
+  const doc = snapshot.docs[0];
+  return { id: doc.id, ...(doc.data() as User) };
+}
+
 
 /**
  * Creates a new user document in Firestore.

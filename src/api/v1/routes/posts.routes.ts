@@ -11,10 +11,12 @@ import {
   deletePost,
 } from "../controllers/posts.controller";
 import { upload } from "../middleware/upload.middleware";
+import { authRequired } from "../middleware/auth.middleware";
 
 /** Express Router for post routes */
 const router: Router = express.Router();
 
+router.post("/", authRequired, createPost);
 /**
  * @route POST /api/posts
  * @description Create a new post with an optional image upload
