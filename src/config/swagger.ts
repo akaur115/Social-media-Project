@@ -1,21 +1,28 @@
-import swaggerJsdoc from "swagger-jsdoc";
+import { Express } from "express";
 import swaggerUi from "swagger-ui-express";
-import { Application } from "express";
+import swaggerJsdoc from "swagger-jsdoc";
 
 const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Social Media API",
+      title: "Connectify Social Media API",
       version: "1.0.0",
-      description: "API documentation for Social Media project"
-    }
+      description: "API documentation for Connectify, including CRUD operations, authentication, and image upload.",
+    },
+    servers: [
+      {
+        url: "http://localhost:4000",
+      },
+    ],
   },
-  apis: ["./src/api/v1/routes/*.ts"]
+
+  // Scan all route files for documentation
+  apis: ["./src/api/v1/routes/*.ts"],
 };
 
-export const swaggerSpec = swaggerJsdoc(options);
+const swaggerSpec = swaggerJsdoc(options);
 
-export function swaggerDocs(app: Application) {
+export function setupSwagger(app: Express): void {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
