@@ -100,4 +100,32 @@ router.put("/:id", (req, res) => postsController.updatePost(req, res));
  */
 router.delete("/:id", (req, res) => postsController.deletePost(req, res));
 
+import { authRequired } from "../middleware/auth.middleware";
+
+const router: Router = Router();
+
+/**
+ * @route POST /api/posts
+ * @description Create a post (with optional image)
+ */
+router.post("/", authRequired, upload.single("image"), createPost);
+
+/**
+ * @route GET /api/posts
+ * @description Retrieve all posts
+ */
+router.get("/", authRequired, getAllPosts);
+
+/**
+ * @route PUT /api/posts/:id
+ * @description Update a specific post
+ */
+router.put("/:id", authRequired, updatePost);
+
+/**
+ * @route DELETE /api/posts/:id
+ * @description Delete a specific post
+ */
+router.delete("/:id", authRequired, deletePost);
+
 export default router;
