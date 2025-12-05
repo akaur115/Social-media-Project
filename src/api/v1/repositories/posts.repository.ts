@@ -3,13 +3,18 @@
  */
 
 import { db } from "../../../config/firebase";
+import { QueryDocumentSnapshot } from "firebase-admin/firestore";
 
 const postsCollection = db.collection("posts");
 
 export class PostsRepository {
   static async getAll(filters?: any) {
     const snapshot = await postsCollection.get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    return snapshot.docs.map((doc: QueryDocumentSnapshot) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
   }
 
   static async create(data: Record<string, unknown>) {
@@ -31,5 +36,8 @@ export class PostsRepository {
 
 export const getPostById = async (postId: string) => {
   const postSnap = await postsCollection.doc(postId).get();
-  return postSnap.exists ? { id: postSnap.id, ...postSnap.data() } : null;
+
+  return postSnap.exists
+    ? { id: postSnap.id, ...postSnap.data() }
+    : null;
 };
