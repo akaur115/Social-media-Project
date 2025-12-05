@@ -9,6 +9,8 @@ import {
   uploadPhoto,
   deleteUser
 } from "../controllers/user.controller";
+import { getAllUsers } from "../controllers/user.controller";
+
 
 const router = Router();
 
@@ -53,6 +55,7 @@ router.post("/register", registerUser);
  */
 router.post("/login", loginUser);
 
+router.get("/", authRequired, getAllUsers); 
 /**
  * @swagger
  * /api/v1/users/{id}:
@@ -105,5 +108,6 @@ router.post("/:id/photo", authRequired, upload.single("image"), uploadPhoto);
  *         description: User deleted
  */
 router.delete("/:id", authRequired, adminOnly, deleteUser);
+
 
 export default router;

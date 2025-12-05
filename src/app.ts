@@ -25,6 +25,7 @@ app.use("/api/posts", postsRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/v1/comments", commentRoutes);
+app.use("/uploads", express.static("uploads"));
 
 // Swagger
 setupSwagger(app);

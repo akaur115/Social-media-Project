@@ -24,7 +24,7 @@ export async function register(data: RegisterInput) {
       email: data.email,
       password: hashedPassword,
       role: "user",
-      createdAt: 0
+      createdAt: Date.now()
   });
 
   return newUser;

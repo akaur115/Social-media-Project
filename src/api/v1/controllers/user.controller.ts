@@ -17,30 +17,43 @@ import {
  */
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, username } = req.body;
 
-    // Check if already exists
+    if (!email || !password || !username) {
+      return res.status(400).json({
+        message: "email, password, and username are required",
+      });
+    }
+
     const existing = await getUserByEmail(email);
     if (existing) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // Create Firebase Auth user
+    // Create user in Firebase Auth
     const userRecord = await admin.auth().createUser({
       email,
-      password
+      password,
     });
 
-    // Save in Firestore
+    // Save user in Firestore
     const newUser = await createUser({
       id: userRecord.uid,
+      username,
       email,
-      role: "user" // default role
-    } as any);
+      role: "user",
+      createdAt: Date.now(),
+      password: "",
+    });
 
-    res.status(201).json({ message: "User registered", user: newUser });
+    return res.status(201).json({
+      message: "User registered",
+      user: newUser,
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Error registering user", error });
+    console.error("Register error:", error);
+    return res.status(500).json({ message: "Error registering user" });
   }
 };
 
@@ -51,22 +64,24 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
-    // Check user in Firestore
     const user = await getUserByEmail(email);
-    if (!user)
-      return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     // Generate Firebase Custom Token
     const token = await admin.auth().createCustomToken(user.id!);
 
-    res.status(200).json({ message: "Login successful", token });
+    res.status(200).json({
+      message: "Login successful",
+      token,
+    });
+
   } catch (error) {
     res.status(500).json({ message: "Login error", error });
   }
 };
 
 /**
- * Get User by ID
+ * Get User Profile
  */
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
@@ -76,25 +91,52 @@ export const getUserProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not found" });
 
     res.status(200).json(user);
+
   } catch (error) {
     res.status(500).json({ message: "Error fetching user", error });
   }
 };
 
 /**
- * Upload Profile Photo
+ * Get All Users
+ */
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const usersSnapshot = await admin.firestore().collection("users").get();
+
+    const users = usersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching users", error });
+  }
+};
+
+/**
+ * Upload Profile Photo (LOCAL UPLOAD VERSION)
  */
 export const uploadPhoto = async (req: Request, res: Response) => {
   try {
-    if (!req.file)
+    if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
+    }
 
-    const url = req.file.path;
+    // Local uploaded file location
+    const url = `/uploads/${req.file.filename}`;
 
+    // Save URL in Firestore
     await updateUserPhoto(req.params.id, url);
 
-    res.status(200).json({ message: "Photo updated", url });
+    res.status(200).json({
+      message: "Photo uploaded successfully",
+      url,
+    });
+
   } catch (error) {
+    console.error("Upload error:", error);
     res.status(500).json({ message: "Error uploading photo", error });
   }
 };
@@ -106,6 +148,7 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     await admin.auth().deleteUser(req.params.id);
     res.status(200).json({ message: "User deleted" });
+
   } catch (error) {
     res.status(500).json({ message: "Error deleting user", error });
   }

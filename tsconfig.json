@@ -15,5 +15,5 @@
 
     "skipLibCheck": true
   },
-  "include": ["src", "tests"],
+  "include": ["src/**/*", "src/types/**/*"],
 }

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import admin from "../../../config/firebase";
+import jwt from "jsonwebtoken";
 
 export interface AuthUser {
   uid: string;
@@ -15,19 +15,23 @@ declare global {
   }
 }
 
-export const authRequired = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
+export const authRequired = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
+    const authHeader = req.headers.authorization;
 
-    req.user = {
-      uid: decoded.uid,
-      email: decoded.email!,
-      role: decoded.role as "admin" | "user",
-    };
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ message: "No token provided" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as AuthUser;
+
+    req.user = decoded;
 
     next();
   } catch (error) {
