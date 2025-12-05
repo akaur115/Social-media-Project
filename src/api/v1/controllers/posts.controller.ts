@@ -1,37 +1,73 @@
 /**
  * @file posts.controller.ts
- * @description Controller for Post CRUD operations using Firestore.
  */
 
 import { Request, Response } from "express";
 import { PostsService } from "../services/posts.service";
 
-export const getAllPosts = async (req: Request, res: Response) => {
-  const posts = await PostsService.getAllPosts();
-  return res.status(200).json(posts);
+export const getAllPostsController = async (req: Request, res: Response) => {
+  try {
+    const { userId, search, sort } = req.query;
+
+    const posts = await PostsService.getAllPosts({
+      userId: userId as string,
+      search: search as string,
+      sort: sort as string,
+    });
+
+    return res.status(200).json(posts);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return res.status(500).json({ message: "Failed to get posts" });
+  }
 };
 
-export const createPost = async (req: Request, res: Response) => {
-  const { title, content, imageUrl } = req.body;
+export const createPostController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.uid;
 
-  const newPost = await PostsService.createPost({
-    title,
-    content,
-    imageUrl: imageUrl || null,
-    createdAt: new Date(),
-  });
+    const postData = {
+      title: req.body.title,
+      content: req.body.content,
+      userId,
+      imageUrl: req.file ? req.file.path : null,
+      createdAt: Date.now(),
+    };
 
-  return res.status(201).json(newPost);
+    const newPost = await PostsService.createPost(postData);
+
+    return res.status(201).json(newPost);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to create post" });
+  }
 };
 
-export const updatePost = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const updatedPost = await PostsService.updatePost(id, req.body);
-  return res.status(200).json(updatedPost);
+export const updatePostController = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
+
+    const updatedData = {
+      title: req.body.title,
+      content: req.body.content,
+      imageUrl: req.file ? req.file.path : undefined,
+    };
+
+    const updated = await PostsService.updatePost(postId, updatedData);
+
+    return res.status(200).json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update post" });
+  }
 };
 
-export const deletePost = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const result = await PostsService.deletePost(id);
-  return res.status(200).json(result);
+export const deletePostController = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
+
+    await PostsService.deletePost(postId);
+
+    return res.status(204).send();
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete post" });
+  }
 };

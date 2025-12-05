@@ -1,20 +1,23 @@
 /**
  * @file posts.service.ts
- * @description Service layer that handles business logic for Post operations.
  */
 
 import { PostsRepository } from "../repositories/posts.repository";
 
 export class PostsService {
-  static async getAllPosts() {
-    return await PostsRepository.getAll();
+  static async getAllPosts(filters: {
+    userId?: string;
+    search?: string;
+    sort?: string;
+  }) {
+    return await PostsRepository.getAll(filters);
   }
 
-  static async createPost(data: Record<string, unknown>) {
+  static async createPost(data: any) {
     return await PostsRepository.create(data);
   }
 
-  static async updatePost(id: string, data: Record<string, unknown>) {
+  static async updatePost(id: string, data: any) {
     return await PostsRepository.update(id, data);
   }
 
