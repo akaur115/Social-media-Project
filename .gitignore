@@ -2,4 +2,7 @@ node_modules/
 coverage/
 dist/
 .env
-serviceAccountKey.json
+*.env
+firebase-key.json
+
+git-filter-repo/

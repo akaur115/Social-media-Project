@@ -1,11 +1,14 @@
-/**
- * @file user.routes.ts
- * @description User routes with profile upload
- */
-
 import { Router } from "express";
-import { userController } from "../controllers/user.controller";
+import { authRequired } from "../middleware/auth.middleware";
+import { adminOnly } from "../middleware/admin.middleware";
 import { upload } from "../middleware/multerUpload";
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  uploadPhoto,
+  deleteUser
+} from "../controllers/user.controller";
 
 const router = Router();
 
@@ -13,7 +16,7 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Users
- *   description: User operations
+ *   description: Authentication, profiles & admin operations
  */
 
 /**
@@ -27,7 +30,6 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
  *             properties:
  *               email:
  *                 type: string
@@ -35,40 +37,44 @@ const router = Router();
  *                 type: string
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User registered
  */
-router.post("/register", userController.createUser);
+router.post("/register", registerUser);
+
+/**
+ * @swagger
+ * /api/v1/users/login:
+ *   post:
+ *     summary: Login
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Login successful
+ */
+router.post("/login", loginUser);
 
 /**
  * @swagger
  * /api/v1/users/{id}:
  *   get:
- *     summary: Get a single user profile
+ *     summary: Get user profile
  *     tags: [Users]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
- *         description: User details
+ *         description: User profile returned
  */
-router.get("/:id", userController.getUser);
+router.get("/:id", authRequired, getUserProfile);
 
 /**
  * @swagger
  * /api/v1/users/{id}/photo:
  *   post:
- *     summary: Upload user profile photo
+ *     summary: Upload profile photo
  *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -81,8 +87,23 @@ router.get("/:id", userController.getUser);
  *                 format: binary
  *     responses:
  *       200:
- *         description: Profile photo uploaded
+ *         description: Photo uploaded
  */
-router.post("/:id/photo", upload.single("image"), userController.uploadPhoto);
+router.post("/:id/photo", authRequired, upload.single("image"), uploadPhoto);
+
+/**
+ * @swagger
+ * /api/v1/users/{id}:
+ *   delete:
+ *     summary: Delete user (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *     responses:
+ *       200:
+ *         description: User deleted
+ */
+router.delete("/:id", authRequired, adminOnly, deleteUser);
 
 export default router;

@@ -41,3 +41,4 @@ export async function getUserById(id: string): Promise<User | null> {
 export async function updateUserPhoto(id: string, url: string): Promise<void> {
   await usersRef.doc(id).update({ photoUrl: url });
 }
+

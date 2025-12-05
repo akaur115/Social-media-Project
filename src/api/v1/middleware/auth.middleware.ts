@@ -1,27 +1,36 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import admin from "../../../config/firebase";
 
-const JWT_SECRET = "supersecret123";
+export interface AuthUser {
+  uid: string;
+  email: string;
+  role?: "admin" | "user";
+}
 
-export function authRequired(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  const header = req.headers.authorization;
-
-  if (!header || !header.startsWith("Bearer ")) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  const token = header.split(" ")[1];
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    (req as any).user = decoded; 
-    next();
-  } catch {
-    res.status(401).json({ message: "Invalid token" });
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthUser;
+    }
   }
 }
+
+export const authRequired = async (req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    req.user = {
+      uid: decoded.uid,
+      email: decoded.email!,
+      role: decoded.role as "admin" | "user",
+    };
+
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};

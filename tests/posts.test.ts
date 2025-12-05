@@ -99,8 +99,8 @@ describe("Connectify API - Posts CRUD", () => {
    * @test
    * @description Should delete a post by ID using DELETE /api/posts/:id.
    */
-  it("should delete a post on DELETE /api/posts/:id", async () => {
-    const response = await request(app).delete(`/api/posts/${createdPostId}`);
+  it("should delete a post on DELETE /api/v1/posts/:id", async () => {
+    const response = await request(app).delete(`/api/v1/posts/${createdPostId}`);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("message");
