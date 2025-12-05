@@ -1,49 +1,60 @@
+/**
+ * @file firebase.ts
+ * @description Firebase Admin SDK configuration + mock mode for Jest tests
+ */
+
 import admin from "firebase-admin";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-let db: any;
-let bucket: any;
-
 if (process.env.NODE_ENV === "test") {
   console.log("Firebase running in MOCK mode");
 
+  // Mock Firestore
   const mockDB = {
-    collection: jest.fn(() => ({
-      doc: jest.fn(() => ({
-        get: jest.fn(async () => ({ exists: true, data: () => ({}) })),
-        set: jest.fn(async () => true),
-        update: jest.fn(async () => true),
-        delete: jest.fn(async () => true),
-      })),
-      get: jest.fn(async () => ({ docs: [] })),
-      where: jest.fn(() => ({
-        get: jest.fn(async () => ({ docs: [] }))
-      }))
-    }))
+    collection: () => ({
+      doc: () => ({
+        id: "mock-id",
+        set: jest.fn(),
+        update: jest.fn(),
+        delete: jest.fn(),
+        get: jest.fn().mockResolvedValue({
+          exists: true,
+          data: () => ({})
+        })
+      }),
+      add: jest.fn().mockResolvedValue({ id: "mock-id" }),
+      where: () => ({
+        get: jest.fn().mockResolvedValue({ docs: [] })
+      }),
+      get: jest.fn().mockResolvedValue({ docs: [] })
+    })
   };
 
-  db = mockDB;
-  bucket = {};
-} else {
-  
-  const serviceAccount = {
-    project_id: process.env.FIREBASE_PROJECT_ID,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    client_email: process.env.FIREBASE_CLIENT_EMAIL,
-  };
+  // Mock admin.auth()
+  (admin as any).auth = () => ({
+    createUser: jest.fn().mockResolvedValue({ uid: "mock-uid" }),
+    verifyIdToken: jest.fn().mockResolvedValue({ uid: "mock-uid" }),
+    deleteUser: jest.fn().mockResolvedValue({})
+  });
 
-  if (!admin.apps.length) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-      storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
-    });
-  }
-
-  db = admin.firestore();
-  bucket = admin.storage().bucket();
 }
 
-export { db, bucket };
+
+const serviceAccount = {
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n")
+};
+
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`
+  });
+}
+
+export const db = admin.firestore();
+export const bucket = admin.storage().bucket();
 export default admin;
