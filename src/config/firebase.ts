@@ -1,14 +1,26 @@
-import admin from "firebase-admin";
-import path from "path";
+/**
+ * @file firebase.ts
+ * @description Firebase Admin SDK configuration using environment variables
+ */
 
-const serviceAccountPath = path.join(__dirname, "../../serviceAccountKey.json");
+import admin from "firebase-admin";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const serviceAccount = {
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+};
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountPath),
-    storageBucket: "social-media-api.appspot.com"
+    credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
   });
 }
 
 export const db = admin.firestore();
 export const bucket = admin.storage().bucket();
+export default admin;
