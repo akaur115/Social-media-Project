@@ -20,7 +20,7 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Posts
- *   description: Advanced Post Operations (CRUD + filtering + sorting)
+ *   description: Post CRUD with filtering, search, sorting & ownership validation
  */
 
 /**
@@ -34,21 +34,21 @@ const router = Router();
  *         name: userId
  *         schema:
  *           type: string
- *         description: Filter posts by userId
+ *         description: Filter posts by user ID
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search keyword in title or content
+ *         description: Search in title & content
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
- *           enum: [asc, desc]
- *         description: Sort posts by created date
+ *           enum: [newest, oldest]
+ *         description: Sort posts by creation time
  *     responses:
  *       200:
- *         description: List of filtered/sorted posts
+ *         description: Posts retrieved
  */
 router.get("/", authRequired, getAllPostsController);
 
@@ -56,7 +56,7 @@ router.get("/", authRequired, getAllPostsController);
  * @swagger
  * /api/v1/posts:
  *   post:
- *     summary: Create new post
+ *     summary: Create a new post
  *     tags: [Posts]
  *     requestBody:
  *       required: true
@@ -82,15 +82,17 @@ router.post("/", authRequired, upload.single("image"), createPostController);
  * @swagger
  * /api/v1/posts/{id}:
  *   put:
- *     summary: Update your post
+ *     summary: Update an existing post (Only post owner can update)
  *     tags: [Posts]
  *     parameters:
  *       - in: path
  *         name: id
+ *         schema:
+ *           type: string
  *         required: true
  *     responses:
  *       200:
- *         description: Updated successfully
+ *         description: Post updated
  */
 router.put(
   "/:id",
@@ -104,16 +106,46 @@ router.put(
  * @swagger
  * /api/v1/posts/{id}:
  *   delete:
- *     summary: Delete your post
+ *     summary: Delete a post (Only post owner can delete)
  *     tags: [Posts]
  *     parameters:
  *       - in: path
  *         name: id
+ *         schema:
+ *           type: string
  *         required: true
  *     responses:
  *       204:
- *         description: Post deleted
+ *         description: Post deleted successfully
  */
 router.delete("/:id", authRequired, verifyPostOwner, deletePostController);
+
+/**
+ * @swagger
+ * /api/v1/posts/{id}/comments:
+ *   post:
+ *     tags: [Comments]
+ *     summary: Add a comment to a post
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the post you want to comment on
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Comment added successfully
+ */
+router.post("/:id/comments", authRequired);
 
 export default router;

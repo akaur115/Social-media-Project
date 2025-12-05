@@ -19,27 +19,116 @@ import {
 const router = Router();
 
 /**
- * Register User
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User registration, login, profile & admin operations
+ */
+
+/**
+ * @swagger
+ * /api/v1/users/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User registered successfully
  */
 router.post("/register", registerUser);
 
 /**
- * Login User
+ * @swagger
+ * /api/v1/users/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful
  */
 router.post("/login", loginUser);
 
 /**
- * Get user profile
+ * @swagger
+ * /api/v1/users/{id}:
+ *   get:
+ *     summary: Get user profile
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User profile retrieved
  */
 router.get("/:id", authRequired, getUserProfile);
 
 /**
- * Upload profile photo
+ * @swagger
+ * /api/v1/users/{id}/photo:
+ *   post:
+ *     summary: Upload profile photo
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Photo uploaded successfully
  */
 router.post("/:id/photo", authRequired, upload.single("image"), uploadPhoto);
 
 /**
- * Delete user (ADMIN ONLY)
+ * @swagger
+ * /api/v1/users/{id}:
+ *   delete:
+ *     summary: Delete user (Admin only)
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted
  */
 router.delete("/:id", authRequired, adminOnly, deleteUser);
 
