@@ -34,8 +34,8 @@ if (process.env.NODE_ENV === "test") {
 
   // Mock admin.auth()
   (admin as any).auth = () => ({
-    createUser: jest.fn().mockResolvedValue({ uid: "mock-uid" }),
-    verifyIdToken: jest.fn().mockResolvedValue({ uid: "mock-uid" }),
+    createUser: jest.fn().mockResolvedValue({ uid: "mock-user" }),
+    verifyIdToken: jest.fn().mockResolvedValue({ uid: "mock-user" }),
     deleteUser: jest.fn().mockResolvedValue({})
   });
 
