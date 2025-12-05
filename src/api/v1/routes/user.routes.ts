@@ -1,13 +1,7 @@
-/**
- * @file user.routes.ts
- * @description User routes with authentication + admin restriction
- */
-
 import { Router } from "express";
 import { authRequired } from "../middleware/auth.middleware";
 import { adminOnly } from "../middleware/admin.middleware";
 import { upload } from "../middleware/multerUpload";
-
 import {
   registerUser,
   loginUser,
@@ -22,7 +16,7 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Users
- *   description: User registration, login, profile & admin operations
+ *   description: Authentication, profiles & admin operations
  */
 
 /**
@@ -36,7 +30,6 @@ const router = Router();
  *       content:
  *         application/json:
  *           schema:
- *             type: object
  *             properties:
  *               email:
  *                 type: string
@@ -44,7 +37,7 @@ const router = Router();
  *                 type: string
  *     responses:
  *       201:
- *         description: User registered successfully
+ *         description: User registered
  */
 router.post("/register", registerUser);
 
@@ -52,19 +45,8 @@ router.post("/register", registerUser);
  * @swagger
  * /api/v1/users/login:
  *   post:
- *     summary: Login user
+ *     summary: Login
  *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
  *     responses:
  *       200:
  *         description: Login successful
@@ -80,11 +62,10 @@ router.post("/login", loginUser);
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
+ *         required: true
  *     responses:
  *       200:
- *         description: User profile retrieved
+ *         description: User profile returned
  */
 router.get("/:id", authRequired, getUserProfile);
 
@@ -94,11 +75,6 @@ router.get("/:id", authRequired, getUserProfile);
  *   post:
  *     summary: Upload profile photo
  *     tags: [Users]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -111,7 +87,7 @@ router.get("/:id", authRequired, getUserProfile);
  *                 format: binary
  *     responses:
  *       200:
- *         description: Photo uploaded successfully
+ *         description: Photo uploaded
  */
 router.post("/:id/photo", authRequired, upload.single("image"), uploadPhoto);
 
@@ -124,8 +100,6 @@ router.post("/:id/photo", authRequired, upload.single("image"), uploadPhoto);
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: User deleted

@@ -1,5 +1,6 @@
 /**
  * @file posts.routes.ts
+ * @description Routes for creating, reading, updating, deleting posts + filtering, sorting & comments.
  */
 
 import { Router } from "express";
@@ -8,8 +9,8 @@ import {
   getAllPostsController,
   updatePostController,
   deletePostController,
+  addCommentController
 } from "../controllers/posts.controller";
-
 import { authRequired } from "../middleware/auth.middleware";
 import { upload } from "../middleware/upload.middleware";
 import { verifyPostOwner } from "../middleware/ownership.middleware";
@@ -20,35 +21,35 @@ const router = Router();
  * @swagger
  * tags:
  *   name: Posts
- *   description: Post CRUD with filtering, search, sorting & ownership validation
+ *   description: CRUD operations, filtering, sorting & ownership validation
  */
 
 /**
  * @swagger
  * /api/v1/posts:
  *   get:
- *     summary: Get all posts with filtering, search, and sorting
+ *     summary: Get all posts (supports filtering, sorting & search)
  *     tags: [Posts]
  *     parameters:
  *       - in: query
  *         name: userId
  *         schema:
  *           type: string
- *         description: Filter posts by user ID
+ *         description: Filter by user ID
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search in title & content
+ *         description: Keyword search in title/content
  *       - in: query
  *         name: sort
  *         schema:
  *           type: string
  *           enum: [newest, oldest]
- *         description: Sort posts by creation time
+ *         description: Sort posts by date
  *     responses:
  *       200:
- *         description: Posts retrieved
+ *         description: List of posts
  */
 router.get("/", authRequired, getAllPostsController);
 
@@ -74,7 +75,7 @@ router.get("/", authRequired, getAllPostsController);
  *                 format: binary
  *     responses:
  *       201:
- *         description: Post created
+ *         description: Post created successfully
  */
 router.post("/", authRequired, upload.single("image"), createPostController);
 
@@ -82,41 +83,31 @@ router.post("/", authRequired, upload.single("image"), createPostController);
  * @swagger
  * /api/v1/posts/{id}:
  *   put:
- *     summary: Update an existing post (Only post owner can update)
+ *     summary: Update a post (owner only)
  *     tags: [Posts]
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
  *         required: true
  *     responses:
  *       200:
  *         description: Post updated
  */
-router.put(
-  "/:id",
-  authRequired,
-  verifyPostOwner,
-  upload.single("image"),
-  updatePostController
-);
+router.put("/:id", authRequired, verifyPostOwner, upload.single("image"), updatePostController);
 
 /**
  * @swagger
  * /api/v1/posts/{id}:
  *   delete:
- *     summary: Delete a post (Only post owner can delete)
+ *     summary: Delete a post (owner only)
  *     tags: [Posts]
  *     parameters:
  *       - in: path
  *         name: id
- *         schema:
- *           type: string
  *         required: true
  *     responses:
  *       204:
- *         description: Post deleted successfully
+ *         description: Post deleted
  */
 router.delete("/:id", authRequired, verifyPostOwner, deletePostController);
 
@@ -130,22 +121,18 @@ router.delete("/:id", authRequired, verifyPostOwner, deletePostController);
  *       - in: path
  *         name: id
  *         required: true
- *         schema:
- *           type: string
- *         description: ID of the post you want to comment on
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
  *             properties:
  *               text:
  *                 type: string
  *     responses:
  *       201:
- *         description: Comment added successfully
+ *         description: Comment added
  */
-router.post("/:id/comments", authRequired);
+router.post("/:id/comments", authRequired, addCommentController);
 
 export default router;
