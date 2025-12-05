@@ -3,5 +3,4 @@ coverage/
 dist/
 .env
 firebase-key.json
-*.json
-*.serviceAccount.json
+
