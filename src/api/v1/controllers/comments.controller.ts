@@ -1,40 +1,57 @@
 import { Request, Response } from "express";
-import { commentsRepository } from "../repositories/comments.repository";
+import {
+  addComment,
+  getPostComments,
+  editComment,
+  removeComment
+} from "../repositories/comments.repository";
 
-export const commentsController = {
-  async create(req: Request, res: Response) {
-    try {
-      const comment = await commentsRepository.addComment(req.body);
-      res.status(201).json(comment);
-    } catch {
-      res.status(500).json({ error: "Failed to add comment" });
-    }
-  },
+export const createComment = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.postId;
+    const { text } = req.body;
+    const userId = req.user?.uid;
 
-  async getByPost(req: Request, res: Response) {
-    try {
-      const comments = await commentsRepository.getCommentsByPost(req.params.postId);
-      res.json(comments);
-    } catch {
-      res.status(500).json({ error: "Failed to get comments" });
-    }
-  },
+    const comment = await addComment(postId, userId!, text);
 
-  async update(req: Request, res: Response) {
-    try {
-      const comment = await commentsRepository.updateComment(req.params.id, req.body);
-      res.json(comment);
-    } catch {
-      res.status(500).json({ error: "Failed to update comment" });
-    }
-  },
+    res.status(201).json({ message: "Comment created", comment });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create comment" });
+  }
+};
 
-  async delete(req: Request, res: Response) {
-    try {
-      await commentsRepository.deleteComment(req.params.id);
-      res.status(204).send();
-    } catch {
-      res.status(500).json({ error: "Failed to delete comment" });
-    }
+export const getCommentsByPost = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.postId;
+    const comments = await getPostComments(postId);
+
+    res.status(200).json(comments);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch comments" });
+  }
+};
+
+export const updateComment = async (req: Request, res: Response) => {
+  try {
+    const commentId = req.params.commentId;
+    const { text } = req.body;
+
+    const updated = await editComment(commentId, text);
+
+    res.status(200).json(updated);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update comment" });
+  }
+};
+
+export const deleteComment = async (req: Request, res: Response) => {
+  try {
+    const commentId = req.params.commentId;
+
+    await removeComment(commentId);
+
+    res.status(200).json({ message: "Comment deleted" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete comment" });
   }
 };
