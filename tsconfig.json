@@ -6,8 +6,14 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "jest"],
     "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+
     "skipLibCheck": true
-  }
+  },
+  "include": ["src/**/*", "src/types/**/*"],
 }

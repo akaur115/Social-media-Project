@@ -3,14 +3,17 @@
  * @description Initializes the Connectify API backend with Express and TypeScript.
  */
 
-import express, { Application, Request, Response } from "express";
+import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 
 import postsRoutes from "./api/v1/routes/posts.routes";
 import { setupSwagger } from "./config/swagger";
+import userRoutes from "./api/v1/routes/user.routes";
+import authRoutes from "./api/v1/routes/auth.routes";
+import commentRoutes from "./api/v1/routes/comments.routes";
 
-const app: Application = express();
+const app: Express = express();
 
 // Middleware
 app.use(express.json());
@@ -19,6 +22,10 @@ app.use(helmet());
 
 // Routes
 app.use("/api/posts", postsRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/v1/comments", commentRoutes);
+app.use("/uploads", express.static("uploads"));
 
 // Swagger
 setupSwagger(app);

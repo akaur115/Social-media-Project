@@ -23,3 +23,9 @@ It lets the server process multipart/form-data requests, which are used when upl
 Step 1 - Install Packages bash
 npm install multer
 npm install --save-dev @types/multer
+
+## 4. Possible future improvements
+
+- Move storage from local `uploads/` to a cloud bucket.
+- Add image size checks (height/width) and better error messages.
+- Build a clean-up job to remove unused images.

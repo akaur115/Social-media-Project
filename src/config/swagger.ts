@@ -1,125 +1,84 @@
 /**
  * @file swagger.ts
- * @description Configures Swagger (OpenAPI) documentation for the Connectify API.
+ * @description Swagger / OpenAPI configuration for Connectify API
  */
 
-import swaggerJsdoc from "swagger-jsdoc";
+import { Express } from "express";
 import swaggerUi from "swagger-ui-express";
-import { Application } from "express";
+import swaggerJsdoc from "swagger-jsdoc";
 
-/**
- * Swagger definition for the Connectify API.
- */
-const swaggerOptions = {
+const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Connectify API Documentation",
+      title: "Connectify Social Media API",
       version: "1.0.0",
       description:
-        "API documentation for the Connectify Social Media Platform, including CRUD operations and image upload support.",
+        "API documentation for Connectify — including authentication, posts, comments, admin routes, filtering, sorting, and file uploads.",
     },
+
     servers: [
       {
         url: "http://localhost:4000",
-        description: "Development Server",
       },
     ],
 
-    /**
-     * Add paths manually to support file uploads for POST /api/posts
-     */
-    paths: {
-      "/api/posts": {
-        post: {
-          tags: ["Posts"],
-          summary: "Create a post (with optional image upload)",
-          requestBody: {
-            required: false,
-            content: {
-              "multipart/form-data": {
-                schema: {
-                  type: "object",
-                  properties: {
-                    image: {
-                      type: "string",
-                      format: "binary",
-                    },
-                  },
-                },
-              },
-            },
-          },
-          responses: {
-            201: {
-              description: "Post created successfully",
-            },
-            400: {
-              description: "Invalid data or image upload failed",
-            },
-          },
-        },
-
-        get: {
-          tags: ["Posts"],
-          summary: "Get all posts",
-          responses: {
-            200: {
-              description: "List of posts",
-            },
-          },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
         },
       },
 
-      "/api/posts/{id}": {
-        put: {
-          tags: ["Posts"],
-          summary: "Update a post by ID",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string" },
-              description: "Post ID",
-            },
-          ],
-          responses: {
-            200: { description: "Post updated successfully" },
-            404: { description: "Post not found" },
+      schemas: {
+        Post: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            title: { type: "string" },
+            content: { type: "string" },
+            userId: { type: "string" },
+            imageUrl: { type: "string" },
           },
         },
 
-        delete: {
-          tags: ["Posts"],
-          summary: "Delete a post by ID",
-          parameters: [
-            {
-              name: "id",
-              in: "path",
-              required: true,
-              schema: { type: "string" },
-              description: "Post ID",
-            },
-          ],
-          responses: {
-            200: { description: "Post deleted successfully" },
-            404: { description: "Post not found" },
-          },
+        Comment: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            postId: { type: "string" },
+            userId: { type: "string" },
+            text: { type: "string" }
+          }
         },
-      },
+
+        User: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            email: { type: "string" },
+            role: { type: "string", enum: ["admin", "user"] }
+          }
+        }
+      }
     },
+
+    // Require JWT on routes unless explicitly disabled
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
 
-  apis: ["./src/api/v1/routes/*.ts"], // scan for JSDoc annotations in routes
+  // Scan ALL route files for Swagger JSDoc
+  apis: ["./src/api/v1/routes/*.ts", "./src/api/v1/controllers/*.ts"],
 };
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const swaggerSpec = swaggerJsdoc(options);
 
-/**
- * Sets up Swagger UI route at /api-docs
- * @param app Express app instance
- */
-export function setupSwagger(app: Application): void {
+export function setupSwagger(app: Express): void {
   app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }

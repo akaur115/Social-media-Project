@@ -1,98 +1,119 @@
 /**
  * @file posts.controller.ts
- * @description Controller logic for CRUD operations on social media posts.
+ * @description Controller for Post CRUD + filtering/sorting + comments
  */
 
 import { Request, Response } from "express";
+import { PostsService } from "../services/posts.service";
+import { CommentsService } from "../services/comments.service"; 
 
 /**
- * @typedef {Object} Post
- * @property {string} id - Unique post identifier.
- * @property {string} title - Title of the post.
- * @property {string} content - Post body content.
+ * Get all posts with optional filtering & sorting
  */
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-}
+export const getAllPostsController = async (req: Request, res: Response) => {
+  try {
+    const { userId, search, sort } = req.query;
 
-/** In-memory array simulating database */
-const posts: Post[] = [];
+    const posts = await PostsService.getAllPosts({
+      userId: userId as string,
+      search: search as string,
+      sort: sort as string,
+    });
 
-/**
- * @route POST /api/posts
- * @description Create a new post
- */
-export const createPost = (req: Request, res: Response): void => {
-  const { title, content } = req.body;
-
-  if (!title || !content) {
-    res.status(400).json({ message: "Title and content are required." });
-    return;
+    return res.status(200).json(posts);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return res.status(500).json({ message: "Failed to get posts" });
   }
-
-  const newPost: Post = {
-    id: (posts.length + 1).toString(),
-    title,
-    content,
-  };
-
-  posts.push(newPost);
-  res.status(201).json({
-    message: "Post created successfully",
-    data: newPost,
-  });
 };
 
 /**
- * @route GET /api/posts
- * @description Fetch all posts
+ * Create a new post
  */
-export const getAllPosts = (req: Request, res: Response): void => {
-  res.status(200).json({
-    message: "Fetched all posts successfully",
-    data: posts,
-  });
+export const createPostController = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.uid;
+
+    const postData = {
+      title: req.body.title,
+      content: req.body.content,
+      userId,
+      imageUrl: req.file ? req.file.path : null,
+      createdAt: Date.now(),
+    };
+
+    const newPost = await PostsService.createPost(postData);
+
+    return res.status(201).json(newPost);
+  } catch (error) {
+    console.error("Create Post Error:", error);
+    return res.status(500).json({ message: "Failed to create post" });
+  }
 };
 
 /**
- * @route PUT /api/posts/:id
- * @description Update an existing post by ID
+ * Update an existing post
  */
-export const updatePost = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  const { title, content } = req.body;
+export const updatePostController = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
 
-  const index = posts.findIndex((p) => p.id === id);
-  if (index === -1) {
-    res.status(404).json({ message: "Post not found." });
-    return;
+    const updatedData = {
+      title: req.body.title,
+      content: req.body.content,
+      imageUrl: req.file ? req.file.path : undefined,
+    };
+
+    const updated = await PostsService.updatePost(postId, updatedData);
+
+    return res.status(200).json(updated);
+  } catch (error) {
+    console.error("Update Post Error:", error);
+    return res.status(500).json({ message: "Failed to update post" });
   }
-
-  posts[index] = { ...posts[index], title, content };
-  res.status(200).json({
-    message: "Post updated successfully",
-    data: posts[index],
-  });
 };
 
 /**
- * @route DELETE /api/posts/:id
- * @description Delete a post by ID
+ * Delete a post
  */
-export const deletePost = (req: Request, res: Response): void => {
-  const { id } = req.params;
-  const index = posts.findIndex((p) => p.id === id);
+export const deletePostController = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
 
-  if (index === -1) {
-    res.status(404).json({ message: "Post not found." });
-    return;
+    await PostsService.deletePost(postId);
+
+    return res.status(204).send();
+  } catch (error) {
+    console.error("Delete Post Error:", error);
+    return res.status(500).json({ message: "Failed to delete post" });
   }
+};
 
-  const deleted = posts.splice(index, 1);
-  res.status(200).json({
-    message: "Post deleted successfully",
-    data: deleted,
-  });
+/**
+ * @description Add a comment to a post
+ */
+export const addCommentController = async (req: Request, res: Response) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user?.uid;
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ message: "Comment text is required" });
+    }
+
+    const comment = await CommentsService.addComment(
+      postId,
+      userId!,
+      text
+    );
+
+    return res.status(201).json({
+      message: "Comment added",
+      data: comment,
+    });
+  } catch (error) {
+    console.error("Add Comment Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
